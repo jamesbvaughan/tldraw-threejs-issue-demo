@@ -1,5 +1,4 @@
 import { Box } from "@react-three/drei";
-import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
 import {
   HTMLContainer,
@@ -9,7 +8,7 @@ import {
   TLShapeUtil,
   Utils,
 } from "@tldraw/core";
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 import useStore from "./store";
 
 export interface ThreeJsShape extends TLShape {
@@ -20,27 +19,10 @@ export interface ThreeJsShape extends TLShape {
 const ThreeJsCanvasInternals = ({width, height}: {width: number, height: number}) => {
   const tldrawZoom = useStore(s => s.tlPageState.camera.zoom)
 
-  const camera = useThree((s) => s.camera);
-  const size = useThree((s) => s.size);
   const set = useThree((s) => s.set);
   const get = useThree((s) => s.get);
 
-  useLayoutEffect(() => {
-    if (!camera) return;
-
-    if (camera instanceof THREE.PerspectiveCamera) {
-      camera.aspect = size.width / size.height;
-    } else if (camera instanceof THREE.OrthographicCamera) {
-      camera.left = -size.width / 2 / tldrawZoom;
-      camera.right = size.width / 2 / tldrawZoom;
-      camera.top = size.height / 2 / tldrawZoom;
-      camera.bottom = -size.height / 2 / tldrawZoom;
-    }
-
-    camera.updateProjectionMatrix();
-  }, [camera, size, tldrawZoom]);
-
-  useLayoutEffect(() => {
+  useEffect(() => {
     set({
       size: {
         ...get().size,

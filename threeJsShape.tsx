@@ -16,7 +16,13 @@ export interface ThreeJsShape extends TLShape {
   height: number;
 }
 
-const ThreeJsCanvasInternals = () => {
+const ThreeJsCanvasInternals = ({
+  width,
+  height,
+}: {
+  width: number;
+  height: number;
+}) => {
   return (
     <Box>
       <meshBasicMaterial color="red" wireframe />

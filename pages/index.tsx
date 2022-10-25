@@ -33,7 +33,7 @@ const Home: NextPage = () => {
 
         <p>
           To reproduce: Zoom in with Cmd+scroll. The red wireframe shape should
-          remain sharp but it does not.
+          remain sharp but it does not. (You can left-click and drag to pan.)
         </p>
 
         <TlCanvas />

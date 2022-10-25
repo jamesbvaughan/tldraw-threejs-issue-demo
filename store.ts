@@ -80,8 +80,8 @@ const useStore = create<Store>((set, get) => ({
   handleZoom: (pointerInfo) => {
     const { zoom, point } = get().tlPageState.camera;
 
-    const minimumZoomLevel = 0.5;
-    const maximumZoomLevel = 10;
+    const minimumZoomLevel = 0.2;
+    const maximumZoomLevel = 20;
 
     const zoomBy = Utils.throttle((delta: number, center: number[]) => {
       const nextZoom = Utils.clamp(

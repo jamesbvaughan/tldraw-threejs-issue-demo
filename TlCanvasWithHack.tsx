@@ -7,7 +7,7 @@ const shapeUtils = {
   threeJsShape: new ThreeJsShapeUtil(),
 };
 
-const TlCanvas = ({ shouldUseHack = false }: { shouldUseHack?: boolean }) => {
+const TlCanvas = () => {
   const {
     tlPage,
     tlPageState,
@@ -28,7 +28,6 @@ const TlCanvas = ({ shouldUseHack = false }: { shouldUseHack?: boolean }) => {
       onZoom={handleZoom}
       onHoverShape={handleHoverShape}
       onUnhoverShape={handleUnhoverShape}
-      meta={{ shouldUseHack }}
     />
   );
 };

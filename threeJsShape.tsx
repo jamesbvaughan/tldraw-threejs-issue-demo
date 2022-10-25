@@ -16,12 +16,28 @@ export interface ThreeJsShape extends TLShape {
   height: number;
 }
 
-const ThreeJsCanvasInternals = ({width, height}: {width: number, height: number}) => {
-  const tldrawZoom = useStore(s => s.tlPageState.camera.zoom)
+const ThreeJsCanvasInternals = () => {
+  return (
+    <Box>
+      <meshBasicMaterial color="red" wireframe />
+    </Box>
+  );
+};
+
+const ThreeJsCanvasInternalsWithHack = ({
+  width,
+  height,
+}: {
+  width: number;
+  height: number;
+}) => {
+  const tldrawZoom = useStore((s) => s.tlPageState.camera.zoom);
 
   const set = useThree((s) => s.set);
   const get = useThree((s) => s.get);
 
+  // The purpose of this effect is to manually update the Three.js camera's
+  // parameters as the tldraw canvas' zoom level changes.
   useEffect(() => {
     set({
       size: {
@@ -35,7 +51,7 @@ const ThreeJsCanvasInternals = ({width, height}: {width: number, height: number}
 
   return (
     <Box>
-      <meshBasicMaterial color="green" wireframe />
+      <meshBasicMaterial color="red" wireframe />
     </Box>
   );
 };
@@ -46,7 +62,11 @@ export class ThreeJsShapeUtil extends TLShapeUtil<
 > {
   Component = TLShapeUtil.Component<ThreeJsShape, HTMLImageElement>(
     (
-      { shape: { width, height }, events }: TLComponentProps<ThreeJsShape>,
+      {
+        shape: { width, height },
+        events,
+        meta: { shouldUseHack },
+      }: TLComponentProps<ThreeJsShape>,
       ref
     ) => {
       return (
@@ -56,13 +76,18 @@ export class ThreeJsShapeUtil extends TLShapeUtil<
               height,
               width,
               borderWidth: 2,
+              backgroundColor: "gray",
               borderColor: "black",
               borderStyle: "solid",
               pointerEvents: "auto",
             }}
           >
             <Canvas>
-              <ThreeJsCanvasInternals width={width} height={height} />
+              {shouldUseHack ? (
+                <ThreeJsCanvasInternalsWithHack width={width} height={height} />
+              ) : (
+                <ThreeJsCanvasInternals width={width} height={height} />
+              )}
             </Canvas>
           </div>
         </HTMLContainer>

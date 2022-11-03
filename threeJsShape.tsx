@@ -8,7 +8,9 @@ import {
   TLShapeUtil,
   Utils,
 } from "@tldraw/core";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import * as THREE from "three";
+
 import useStore from "./store";
 
 export interface ThreeJsShape extends TLShape {
@@ -19,32 +21,23 @@ export interface ThreeJsShape extends TLShape {
 const ThreeJsCanvasInternals = ({
   width,
   height,
+  shouldUseHack,
 }: {
   width: number;
   height: number;
-}) => {
-  return (
-    <Box>
-      <meshBasicMaterial color="red" wireframe />
-    </Box>
-  );
-};
-
-const ThreeJsCanvasInternalsWithHack = ({
-  width,
-  height,
-}: {
-  width: number;
-  height: number;
+  shouldUseHack: boolean;
 }) => {
   const tldrawZoom = useStore((s) => s.tlPageState.camera.zoom);
 
   const set = useThree((s) => s.set);
   const get = useThree((s) => s.get);
+  const scene = useThree((s) => s.scene);
 
   // The purpose of this effect is to manually update the Three.js camera's
   // parameters as the tldraw canvas' zoom level changes.
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!shouldUseHack) return;
+
     set({
       size: {
         ...get().size,
@@ -53,7 +46,13 @@ const ThreeJsCanvasInternalsWithHack = ({
         updateStyle: false,
       },
     });
-  }, [tldrawZoom, set, get, width, height]);
+  }, [shouldUseHack, tldrawZoom, set, get, width, height]);
+
+  useEffect(() => {
+    scene.background = new THREE.Color("white");
+  }, [scene]);
+
+  if (shouldUseHack) console.log("zoom", tldrawZoom)
 
   return (
     <Box>
@@ -75,6 +74,8 @@ export class ThreeJsShapeUtil extends TLShapeUtil<
       }: TLComponentProps<ThreeJsShape>,
       ref
     ) => {
+      const canvasRef = useRef<HTMLCanvasElement>(null)
+
       return (
         <HTMLContainer ref={ref} {...events}>
           <div
@@ -82,19 +83,24 @@ export class ThreeJsShapeUtil extends TLShapeUtil<
               height,
               width,
               borderWidth: 2,
-              backgroundColor: "gray",
               borderColor: "black",
               borderStyle: "solid",
               pointerEvents: "auto",
             }}
           >
-            <Canvas>
-              {shouldUseHack ? (
-                <ThreeJsCanvasInternalsWithHack width={width} height={height} />
-              ) : (
-                <ThreeJsCanvasInternals width={width} height={height} />
-              )}
-            </Canvas>
+            <div
+              style={{ height: "100%", width: "100%", position: "relative" }}
+            >
+              <div style={{ height: "100%", width: "100%" }}>
+                <Canvas color="green" ref={canvasRef}>
+                  <ThreeJsCanvasInternals
+                    width={width}
+                    height={height}
+                    shouldUseHack={shouldUseHack}
+                  />
+                </Canvas>
+              </div>
+            </div>
           </div>
         </HTMLContainer>
       );

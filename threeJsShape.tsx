@@ -8,8 +8,8 @@ import {
   TLShapeUtil,
   Utils,
 } from "@tldraw/core";
-import { useEffect, useLayoutEffect, useRef } from "react";
-import * as THREE from "three";
+import { useRef } from "react";
+import { BufferGeometry, Camera, Group, Material, Scene, WebGLRenderer } from "three";
 
 import useStore from "./store";
 
@@ -21,7 +21,6 @@ export interface ThreeJsShape extends TLShape {
 const ThreeJsCanvasInternals = ({
   width,
   height,
-  shouldUseHack,
 }: {
   width: number;
   height: number;
@@ -29,30 +28,26 @@ const ThreeJsCanvasInternals = ({
 }) => {
   const tldrawZoom = useStore((s) => s.tlPageState.camera.zoom);
 
-  const set = useThree((s) => s.set);
-  const get = useThree((s) => s.get);
   const scene = useThree((s) => s.scene);
 
-  // The purpose of this effect is to manually update the Three.js camera's
-  // parameters as the tldraw canvas' zoom level changes.
-  useLayoutEffect(() => {
-    if (!shouldUseHack) return;
+  if (!scene.userData["custom-size"]) {
+    const customSize = [0, 0];
+    scene.userData["custom-size"] = customSize;
+    scene.onBeforeRender = (renderer: WebGLRenderer,
+      _scene: Scene,
+      _camera: Camera,
+      _geometry: BufferGeometry,
+      _material: Material,
+      _group: Group
+    ) => {
+      // This overwrites the setSize call from react-three-fiber, which uses a
+      // CSS measurement for the canvas element, which is not what we want here.
+      renderer.setSize(customSize[0], customSize[1], false);
+    }
+  }
 
-    set({
-      size: {
-        ...get().size,
-        width: width * tldrawZoom,
-        height: height * tldrawZoom,
-        updateStyle: false,
-      },
-    });
-  }, [shouldUseHack, tldrawZoom, set, get, width, height]);
-
-  useEffect(() => {
-    scene.background = new THREE.Color("white");
-  }, [scene]);
-
-  if (shouldUseHack) console.log("zoom", tldrawZoom)
+  scene.userData["custom-size"][0] = width * tldrawZoom;
+  scene.userData["custom-size"][1] = height * tldrawZoom;
 
   return (
     <Box>
